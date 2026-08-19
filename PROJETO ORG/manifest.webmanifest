@@ -1,0 +1,25 @@
+{
+  "name": "Retorna | Agenda de inspeções",
+  "short_name": "Retorna",
+  "description": "Organize inspeções e datas de retorno.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f0e8",
+  "theme_color": "#426b55",
+  "lang": "pt-BR",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

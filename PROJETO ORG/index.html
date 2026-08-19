@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4f0e8">
+  <meta name="description" content="Organize inspeções e datas de retorno.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Retorna">
+  <title>Retorna | Agenda de inspeções</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Retorna, início">
+        <span class="brand-mark">↗</span>
+        <span>retorna<span class="brand-dot">.</span></span>
+      </a>
+      <div class="topbar-note"><span class="pulse"></span> sua rotina, em dia</div>
+    </header>
+
+    <main id="top">
+      <section class="intro">
+        <div>
+          <p class="eyebrow">CONTROLE DE RETORNOS</p>
+          <h1>O próximo passo<br><em>já tem data.</em></h1>
+        </div>
+        <p class="intro-copy">Registre suas inspeções, defina o prazo e deixe o acompanhamento organizado para não perder nenhum retorno.</p>
+      </section>
+
+      <section class="workspace" aria-label="Cadastro e agenda de retornos">
+        <aside class="form-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">NOVA INSPEÇÃO</p>
+              <h2>Adicionar registro</h2>
+            </div>
+            <span class="number-badge">01</span>
+          </div>
+          <form id="inspection-form">
+            <label for="performed-date">Data da inspeção</label>
+            <input id="performed-date" name="performedDate" type="date" required>
+
+            <div class="field-row">
+              <div>
+                <label for="deadline">Prazo</label>
+                <div class="input-with-suffix">
+                  <input id="deadline" name="deadline" type="number" min="0" step="1" placeholder="Ex.: 11" required>
+                  <span>dias</span>
+                </div>
+              </div>
+              <div>
+                <label for="return-date">Data de retorno</label>
+                <input id="return-date" name="returnDate" type="date" required>
+              </div>
+            </div>
+            <p class="field-hint" id="calculation-hint">Preencha a data e o prazo para calcular automaticamente.</p>
+
+            <label for="description">O que foi feito?</label>
+            <textarea id="description" name="description" rows="4" placeholder="Descreva a inspeção realizada..." required></textarea>
+
+            <button class="primary-button" type="submit"><span>+</span> Salvar inspeção</button>
+          </form>
+        </aside>
+
+        <section class="list-panel">
+          <div class="list-heading">
+            <div>
+              <p class="eyebrow">VISÃO GERAL</p>
+              <h2>Próximos retornos <span id="record-count">0</span></h2>
+            </div>
+            <div class="filter-wrap">
+              <label class="sr-only" for="status-filter">Filtrar registros</label>
+              <select id="status-filter">
+                <option value="all">Todos</option>
+                <option value="open">Pendentes</option>
+                <option value="done">Concluídos</option>
+              </select>
+            </div>
+          </div>
+          <div class="stats-row" aria-label="Resumo dos registros">
+            <div><strong id="pending-count">0</strong><span>pendentes</span></div>
+            <div><strong id="today-count">0</strong><span>para hoje</span></div>
+            <div><strong id="done-count">0</strong><span>concluídos</span></div>
+          </div>
+          <div id="inspection-list" class="inspection-list"></div>
+        </section>
+      </section>
+    </main>
+    <footer><span>RETORNA</span> Organização simples para dias mais tranquilos.</footer>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
