@@ -40,6 +40,7 @@ form input:focus, form textarea:focus { border-color: var(--yellow); background:
 form input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .8; }
 form input::placeholder, form textarea::placeholder { color: rgba(255,253,248,.56); }
 form textarea { resize: vertical; min-height: 105px; line-height: 1.45; }
+form select option { background: var(--white); color: var(--ink); }
 form > label:not(:first-child) { margin-top: 22px; }
 .field-row { display: grid; grid-template-columns: 1fr 1.16fr; gap: 12px; margin-top: 21px; }
 .input-with-suffix { position: relative; }
