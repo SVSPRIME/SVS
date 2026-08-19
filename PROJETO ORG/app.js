@@ -1,4 +1,6 @@
-const STORAGE_KEY = "retorna-inspections";
+const SUPABASE_URL = "https://naplowsidulxqhjjhxus.supabase.co";
+const SUPABASE_KEY = "sb_publishable_R3nDvvrP-oGAc4OtH9iXLQ_rUQN8Sub";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const form = document.querySelector("#inspection-form");
 const performedBy = document.querySelector("#performed-by");
 const performedDate = document.querySelector("#performed-date");
@@ -25,18 +27,59 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-let inspections = readInspections();
+let inspections = [];
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 performedDate.value = toInputDate(today);
 
-function readInspections() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
+function fromDatabase(item) {
+  return {
+    id: item.id,
+    performedDate: item.performed_date,
+    deadline: item.deadline,
+    returnDate: item.return_date,
+    description: item.description,
+    performedBy: item.performed_by,
+    createdAt: item.created_at,
+    completed: item.completed,
+    updatedBy: item.updated_by,
+    updatedAt: item.updated_at
+  };
 }
 
-function saveInspections() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(inspections));
+async function loadInspections() {
+  const { data, error } = await supabaseClient.from("inspections").select("*").order("return_date", { ascending: true });
+  if (error) throw error;
+  inspections = data.map(fromDatabase);
+  render();
+}
+
+async function createInspection(item) {
+  const { error } = await supabaseClient.from("inspections").insert({
+    id: item.id,
+    performed_date: item.performedDate,
+    deadline: item.deadline,
+    return_date: item.returnDate,
+    description: item.description,
+    performed_by: item.performedBy,
+    created_at: item.createdAt,
+    completed: false
+  });
+  if (error) throw error;
+}
+
+async function updateInspection(item) {
+  const { error } = await supabaseClient.from("inspections").update({
+    completed: item.completed,
+    updated_by: item.updatedBy,
+    updated_at: item.updatedAt
+  }).eq("id", item.id);
+  if (error) throw error;
+}
+
+async function deleteInspection(id) {
+  const { error } = await supabaseClient.from("inspections").delete().eq("id", id);
+  if (error) throw error;
 }
 
 function toInputDate(date) {
@@ -119,12 +162,14 @@ form.addEventListener("submit", event => {
   event.preventDefault();
   const data = new FormData(form);
   const now = new Date().toISOString();
-  inspections.push({ id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), performedBy: data.get("performedBy"), createdAt: now, completed: false });
-  saveInspections();
-  form.reset();
-  performedDate.value = toInputDate(today);
-  calculationHint.textContent = "Preencha a data e o prazo para calcular automaticamente.";
-  render();
+  const item = { id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), performedBy: data.get("performedBy"), createdAt: now, completed: false };
+  createInspection(item).then(() => {
+    inspections.push(item);
+    form.reset();
+    performedDate.value = toInputDate(today);
+    calculationHint.textContent = "Preencha a data e o prazo para calcular automaticamente.";
+    render();
+  }).catch(showDatabaseError);
 });
 
 list.addEventListener("click", event => {
@@ -133,14 +178,27 @@ list.addEventListener("click", event => {
   const id = button.dataset.id || button.dataset.delete;
   const inspection = inspections.find(item => item.id === id);
   if (!inspection) return;
-  if (button.dataset.delete) inspections = inspections.filter(item => item.id !== id);
-  else {
+  if (button.dataset.delete) {
+    deleteInspection(id).then(() => {
+      inspections = inspections.filter(item => item.id !== id);
+      render();
+    }).catch(showDatabaseError);
+    return;
+  } else {
     inspection.completed = !inspection.completed;
     inspection.updatedBy = performedBy.value;
     inspection.updatedAt = new Date().toISOString();
   }
-  saveInspections();
-  render();
+  updateInspection(inspection).then(render).catch(showDatabaseError);
 });
 
-render();
+function showDatabaseError(error) {
+  console.error(error);
+  calculationHint.textContent = "Não foi possível sincronizar. Execute o SQL do Supabase e tente novamente.";
+}
+
+supabaseClient.channel("inspections-sync")
+  .on("postgres_changes", { event: "*", schema: "public", table: "inspections" }, loadInspections)
+  .subscribe();
+
+loadInspections().catch(showDatabaseError);
