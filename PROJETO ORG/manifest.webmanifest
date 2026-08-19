@@ -1,11 +1,11 @@
 {
-  "name": "Retorna | Agenda de inspeções",
-  "short_name": "Retorna",
-  "description": "Organize inspeções e datas de retorno.",
+  "name": "Vigilância Sanitária | Controle de inspeções",
+  "short_name": "Vigilância Sanitária",
+  "description": "Controle de inspeções da Vigilância Sanitária.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f4f0e8",
-  "theme_color": "#426b55",
+  "background_color": "#0b1118",
+  "theme_color": "#101923",
   "lang": "pt-BR",
   "orientation": "portrait",
   "icons": [
