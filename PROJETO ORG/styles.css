@@ -26,6 +26,13 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opa
 .brand-mark { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid #527999; border-radius: 6px; color: var(--accent); background: var(--surface-raised); font-size: 11px; font-weight: 800; letter-spacing: .5px; }
 .topbar-note { color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.4px; }
 .pulse { width: 7px; height: 7px; display: inline-block; border-radius: 50%; background: var(--success); margin-right: 7px; box-shadow: 0 0 0 4px rgba(143,198,163,.1); }
+.app-layout { display: grid; grid-template-columns: 188px minmax(0, 1fr); gap: 48px; }
+.side-nav { padding-top: 51px; }
+.nav-label { margin: 0 0 15px; color: var(--muted); font-size: 9px; font-weight: 800; letter-spacing: 1.4px; }
+.nav-item { width: 100%; display: flex; align-items: center; gap: 11px; padding: 11px 10px; margin-bottom: 5px; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--muted); cursor: pointer; font: 700 11px "Manrope", sans-serif; text-align: left; }
+.nav-item:hover { border-color: var(--line); color: var(--ink); }
+.nav-item.active { border-color: #315878; background: var(--surface); color: var(--ink); }
+.nav-icon { color: var(--blue-light); font-size: 9px; font-weight: 800; }
 .intro { display: flex; justify-content: space-between; align-items: end; padding: 70px 0 58px; }
 .eyebrow { color: var(--blue-light); margin: 0 0 12px; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; }
 h1, h2 { margin: 0; font-weight: 700; }
@@ -45,7 +52,16 @@ form input::-webkit-calendar-picker-indicator { filter: invert(1); opacity: .75;
 form input::placeholder, form textarea::placeholder { color: #66798a; }
 form textarea { resize: vertical; min-height: 105px; line-height: 1.45; }
 form select option { background: var(--surface); color: var(--ink); }
+form input[type="file"] { padding: 9px; color: var(--muted); font-size: 11px; }
+form input[type="file"]::file-selector-button { margin-right: 9px; padding: 6px 9px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface-raised); color: var(--ink); cursor: pointer; font: 700 10px "Manrope", sans-serif; }
 form > label:not(:first-child) { margin-top: 20px; }
+.label-optional { color: #66798a; font-weight: 500; text-transform: none; letter-spacing: 0; }
+.optional-field { margin-top: 20px; }
+.input-with-prefix { position: relative; }
+.input-with-prefix span { position: absolute; left: 12px; top: 12px; color: var(--muted); font-size: 11px; }
+.input-with-prefix input { padding-left: 32px; }
+.image-preview { display: flex; align-items: center; gap: 9px; margin-top: 8px; color: var(--muted); font-size: 10px; }
+.image-preview img { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 3px; object-fit: cover; }
 .field-row { display: grid; grid-template-columns: 1fr 1.16fr; gap: 12px; margin-top: 20px; }
 .input-with-suffix { position: relative; }
 .input-with-suffix input { padding-right: 47px; }
@@ -69,6 +85,8 @@ form > label:not(:first-child) { margin-top: 20px; }
 .card-content h3 { margin: 0 0 7px; color: var(--ink); font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
 .card-meta { display: flex; gap: 11px; align-items: center; color: var(--muted); font-size: 10px; flex-wrap: wrap; }
 .card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--blue-light); }
+.record-amount { color: var(--accent); font-weight: 800; }
+.record-image { width: 54px; height: 54px; margin-top: 10px; border: 1px solid var(--line); border-radius: 4px; object-fit: cover; }
 .card-action { display: flex; align-items: center; gap: 9px; }
 .status { padding: 5px 8px; border: 1px solid rgba(223,188,121,.35); border-radius: 4px; background: rgba(223,188,121,.08); color: var(--warning); font-size: 9px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
 .status.overdue { border-color: rgba(229,142,142,.35); background: rgba(229,142,142,.08); color: var(--danger); }
@@ -87,6 +105,10 @@ footer span { color: var(--ink); font-weight: 800; letter-spacing: 1.3px; }
   .topbar { height: 74px; }
   .brand { font-size: 13px; }
   .topbar-note { font-size: 8px; letter-spacing: .8px; }
+  .app-layout { display: block; }
+  .side-nav { display: flex; gap: 5px; padding: 20px 0 0; overflow-x: auto; }
+  .nav-label { display: none; }
+  .nav-item { width: auto; min-width: max-content; margin: 0; padding: 9px 10px; }
   .intro { display: block; padding: 53px 0 42px; }
   h1 { font-size: 49px; letter-spacing: -2px; }
   .intro-copy { width: auto; max-width: 370px; margin: 22px 0 0; }

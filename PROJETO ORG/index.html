@@ -27,21 +27,29 @@
       <div class="topbar-note"><span class="pulse"></span> painel operacional</div>
     </header>
 
+    <div class="app-layout">
+      <aside class="side-nav" aria-label="Módulos do sistema">
+        <p class="nav-label">MÓDULOS</p>
+        <button class="nav-item active" type="button" data-page="inspections"><span class="nav-icon">01</span><span>Inspeções</span></button>
+        <button class="nav-item" type="button" data-page="notifications"><span class="nav-icon">02</span><span>Notificações</span></button>
+        <button class="nav-item" type="button" data-page="infractions"><span class="nav-icon">03</span><span>Autos de infração</span></button>
+      </aside>
+
     <main id="top">
       <section class="intro">
         <div>
-          <p class="eyebrow">VIGILÂNCIA SANITÁRIA</p>
-          <h1>Controle de<br><em>inspeções.</em></h1>
+          <p class="eyebrow" id="page-eyebrow">VIGILÂNCIA SANITÁRIA</p>
+          <h1 id="page-title">Controle de<br><em>inspeções.</em></h1>
         </div>
-        <p class="intro-copy">Registre atividades, acompanhe os prazos e mantenha a rotina da equipe organizada em um só lugar.</p>
+        <p class="intro-copy" id="page-description">Registre atividades, acompanhe os prazos e mantenha a rotina da equipe organizada em um só lugar.</p>
       </section>
 
       <section class="workspace" aria-label="Cadastro e agenda de retornos">
         <aside class="form-panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">REGISTRO</p>
-              <h2>Nova inspeção</h2>
+              <p class="eyebrow" id="form-eyebrow">REGISTRO</p>
+              <h2 id="form-title">Nova inspeção</h2>
             </div>
             <span class="number-badge">01</span>
           </div>
@@ -71,8 +79,17 @@
             </div>
             <p class="field-hint" id="calculation-hint">Preencha a data e o prazo para calcular automaticamente.</p>
 
-            <label for="description">O que foi feito?</label>
+            <div id="amount-field" class="optional-field" hidden>
+              <label for="amount">Valor do auto</label>
+              <div class="input-with-prefix"><span>R$</span><input id="amount" name="amount" type="number" min="0" step="0.01" placeholder="0,00"></div>
+            </div>
+
+            <label id="description-label" for="description">O que foi feito?</label>
             <textarea id="description" name="description" rows="4" placeholder="Descreva a inspeção realizada..." required></textarea>
+
+            <label for="image">Imagem ou documento <span class="label-optional">(opcional)</span></label>
+            <input id="image" name="image" type="file" accept="image/*">
+            <div id="image-preview" class="image-preview" hidden></div>
 
             <button class="primary-button" type="submit"><span>+</span> Salvar inspeção</button>
           </form>
@@ -82,7 +99,7 @@
           <div class="list-heading">
             <div>
               <p class="eyebrow">VISÃO GERAL</p>
-              <h2>Próximos retornos <span id="record-count">0</span></h2>
+              <h2 id="list-title">Próximos retornos <span id="record-count">0</span></h2>
             </div>
             <div class="filter-wrap">
               <label class="sr-only" for="status-filter">Filtrar registros</label>
@@ -102,6 +119,7 @@
         </section>
       </section>
     </main>
+    </div>
     <footer><span>VIGILÂNCIA SANITÁRIA</span> Controle interno de inspeções e retornos.</footer>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

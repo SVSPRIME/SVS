@@ -9,6 +9,17 @@ const returnDate = document.querySelector("#return-date");
 const calculationHint = document.querySelector("#calculation-hint");
 const list = document.querySelector("#inspection-list");
 const filter = document.querySelector("#status-filter");
+const amountField = document.querySelector("#amount-field");
+const amount = document.querySelector("#amount");
+const imageInput = document.querySelector("#image");
+const imagePreview = document.querySelector("#image-preview");
+const navItems = document.querySelectorAll(".nav-item");
+
+const pageConfig = {
+  inspections: { eyebrow: "VIGILÂNCIA SANITÁRIA", title: "Controle de<br><em>inspeções.</em>", description: "Registre atividades, acompanhe os prazos e mantenha a rotina da equipe organizada em um só lugar.", formEyebrow: "REGISTRO", formTitle: "Nova inspeção", listTitle: "Próximos retornos", descriptionLabel: "O que foi feito?", placeholder: "Descreva a inspeção realizada..." },
+  notifications: { eyebrow: "VIGILÂNCIA SANITÁRIA", title: "Central de<br><em>notificações.</em>", description: "Organize comunicados, alertas e acompanhamentos que precisam chegar à equipe.", formEyebrow: "COMUNICAÇÃO", formTitle: "Nova notificação", listTitle: "Notificações registradas", descriptionLabel: "Conteúdo da notificação", placeholder: "Descreva a notificação..." },
+  infractions: { eyebrow: "VIGILÂNCIA SANITÁRIA", title: "Autos de<br><em>infração.</em>", description: "Registre autos emitidos, seus prazos e os valores relacionados a cada ocorrência.", formEyebrow: "DOCUMENTO", formTitle: "Novo auto de infração", listTitle: "Autos registrados", descriptionLabel: "Descrição da infração", placeholder: "Descreva a infração..." }
+};
 
 if ("serviceWorker" in navigator) {
   let refreshing = false;
@@ -28,6 +39,7 @@ if ("serviceWorker" in navigator) {
 }
 
 let inspections = [];
+let activePage = "inspections";
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 performedDate.value = toInputDate(today);
@@ -43,7 +55,10 @@ function fromDatabase(item) {
     createdAt: item.created_at,
     completed: item.completed,
     updatedBy: item.updated_by,
-    updatedAt: item.updated_at
+    updatedAt: item.updated_at,
+    recordType: item.record_type || "inspections",
+    amount: item.amount,
+    imageData: item.image_data
   };
 }
 
@@ -63,7 +78,10 @@ async function createInspection(item) {
     description: item.description,
     performed_by: item.performedBy,
     created_at: item.createdAt,
-    completed: false
+    completed: false,
+    record_type: item.recordType,
+    amount: item.amount || null,
+    image_data: item.imageData || null
   });
   if (error) throw error;
 }
@@ -125,16 +143,19 @@ function statusLabel(status) {
 function render() {
   const selected = filter.value;
   const filtered = inspections
+    .filter(item => item.recordType === activePage)
     .filter(item => selected === "all" || (selected === "done" ? item.completed : !item.completed))
     .sort((a, b) => parseDate(a.returnDate) - parseDate(b.returnDate));
 
-  document.querySelector("#record-count").textContent = inspections.length;
-  document.querySelector("#pending-count").textContent = inspections.filter(item => !item.completed).length;
-  document.querySelector("#today-count").textContent = inspections.filter(item => getStatus(item) === "today").length;
-  document.querySelector("#done-count").textContent = inspections.filter(item => item.completed).length;
+  const pageItems = inspections.filter(item => item.recordType === activePage);
+
+  document.querySelector("#record-count").textContent = pageItems.length;
+  document.querySelector("#pending-count").textContent = pageItems.filter(item => !item.completed).length;
+  document.querySelector("#today-count").textContent = pageItems.filter(item => getStatus(item) === "today").length;
+  document.querySelector("#done-count").textContent = pageItems.filter(item => item.completed).length;
 
   if (!filtered.length) {
-    list.innerHTML = `<div class="empty-state"><strong>${inspections.length ? "Nada por aqui" : "Sua agenda começa aqui"}</strong><p>${inspections.length ? "Não há registros neste filtro." : "Cadastre uma inspeção ao lado para acompanhar seus retornos."}</p></div>`;
+    list.innerHTML = `<div class="empty-state"><strong>${pageItems.length ? "Nada por aqui" : "Nenhum registro ainda"}</strong><p>${pageItems.length ? "Não há registros neste filtro." : "Cadastre um registro para acompanhar esta área."}</p></div>`;
     return;
   }
 
@@ -144,9 +165,13 @@ function render() {
     const activityText = item.updatedBy
       ? `${escapeHtml(item.updatedBy)} ${item.completed ? "concluiu" : "reabriu"} em ${formatDateTime(item.updatedAt)}`
       : `Registrado por ${escapeHtml(item.performedBy || "Usuário não identificado")} em ${formatDateTime(item.createdAt || `${item.performedDate}T12:00:00`)}`;
+    const amountText = activePage === "infractions" && item.amount !== null && item.amount !== undefined
+      ? `<span class="record-amount">R$ ${Number(item.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span><span class="dot"></span>`
+      : "";
+    const imageText = item.imageData ? `<img class="record-image" src="${item.imageData}" alt="Imagem anexada ao registro">` : "";
     return `<article class="inspection-card" style="animation-delay: ${index * 45}ms">
       <div class="date-block"><strong>${formatDate(item.returnDate, { day: "2-digit" })}</strong><span>${formatDate(item.returnDate, { month: "short" }).replace(".", "")}</span></div>
-      <div class="card-content"><h3>${escapeHtml(item.description)}</h3><div class="card-meta"><span>${activityText}</span><span class="dot"></span><span>Feita em ${performedText}</span><span class="dot"></span><span>${item.deadline} ${item.deadline == 1 ? "dia" : "dias"} de prazo</span></div></div>
+      <div class="card-content"><h3>${escapeHtml(item.description)}</h3><div class="card-meta"><span>${activityText}</span><span class="dot"></span>${amountText}<span>Feita em ${performedText}</span><span class="dot"></span><span>${item.deadline} ${item.deadline == 1 ? "dia" : "dias"} de prazo</span></div>${imageText}</div>
       <div class="card-action"><span class="status ${status}">${statusLabel(status)}</span><button class="icon-button" type="button" data-id="${item.id}" aria-label="${item.completed ? "Reabrir" : "Marcar como concluído"}">${item.completed ? "↶" : "✓"}</button><button class="icon-button" type="button" data-delete="${item.id}" aria-label="Excluir registro">×</button></div>
     </article>`;
   }).join("");
@@ -158,19 +183,65 @@ function escapeHtml(text) {
 
 [performedDate, deadline].forEach(input => input.addEventListener("input", updateReturnDate));
 filter.addEventListener("change", render);
-form.addEventListener("submit", event => {
+imageInput.addEventListener("change", () => {
+  const file = imageInput.files[0];
+  if (!file) {
+    imagePreview.hidden = true;
+    imagePreview.innerHTML = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    imagePreview.hidden = false;
+    imagePreview.innerHTML = `<img src="${reader.result}" alt="Prévia da imagem selecionada"><span>${escapeHtml(file.name)}</span>`;
+  };
+  reader.readAsDataURL(file);
+});
+
+function readImage(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) return resolve(null);
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+form.addEventListener("submit", async event => {
   event.preventDefault();
   const data = new FormData(form);
   const now = new Date().toISOString();
-  const item = { id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), performedBy: data.get("performedBy"), createdAt: now, completed: false };
+  const item = { id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), performedBy: data.get("performedBy"), createdAt: now, completed: false, recordType: activePage, amount: activePage === "infractions" ? Number(data.get("amount") || 0) : null, imageData: await readImage(data.get("image")) };
   createInspection(item).then(() => {
     inspections.push(item);
     form.reset();
+    imagePreview.hidden = true;
+    imagePreview.innerHTML = "";
     performedDate.value = toInputDate(today);
     calculationHint.textContent = "Preencha a data e o prazo para calcular automaticamente.";
     render();
   }).catch(showDatabaseError);
 });
+
+function updatePage(page) {
+  activePage = page;
+  const config = pageConfig[page];
+  document.querySelector("#page-eyebrow").textContent = config.eyebrow;
+  document.querySelector("#page-title").innerHTML = config.title;
+  document.querySelector("#page-description").textContent = config.description;
+  document.querySelector("#form-eyebrow").textContent = config.formEyebrow;
+  document.querySelector("#form-title").textContent = config.formTitle;
+  document.querySelector("#list-title").innerHTML = `${config.listTitle} <span id="record-count">0</span>`;
+  document.querySelector("#description-label").textContent = config.descriptionLabel;
+  document.querySelector("#description").placeholder = config.placeholder;
+  amountField.hidden = page !== "infractions";
+  navItems.forEach(item => item.classList.toggle("active", item.dataset.page === page));
+  filter.value = "all";
+  render();
+}
+
+navItems.forEach(item => item.addEventListener("click", () => updatePage(item.dataset.page)));
 
 list.addEventListener("click", event => {
   const button = event.target.closest("button");
