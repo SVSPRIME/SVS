@@ -34,9 +34,10 @@ body::before { content: ""; position: fixed; inset: 0; pointer-events: none; opa
 .nav-item.active { border-color: #315878; background: var(--surface); color: var(--ink); }
 .nav-icon { color: var(--blue-light); font-size: 9px; font-weight: 800; }
 .intro { display: flex; justify-content: space-between; align-items: end; padding: 70px 0 58px; }
+.intro .eyebrow, .intro-copy { display: none; }
 .eyebrow { color: var(--blue-light); margin: 0 0 12px; font-size: 10px; font-weight: 800; letter-spacing: 1.5px; }
 h1, h2 { margin: 0; font-weight: 700; }
-h1 { max-width: 700px; font-size: clamp(44px, 6vw, 76px); line-height: 1.04; letter-spacing: -2.8px; }
+h1 { max-width: 700px; font-size: clamp(58px, 8vw, 104px); line-height: 1.02; letter-spacing: -3px; }
 h1 em { color: var(--blue-light); font-style: normal; }
 .intro-copy { width: 320px; margin: 0 3% 5px 0; color: var(--muted); font-size: 13px; line-height: 1.75; }
 .workspace { display: grid; grid-template-columns: minmax(320px, 390px) 1fr; gap: 32px; align-items: start; }
@@ -60,8 +61,8 @@ form > label:not(:first-child) { margin-top: 20px; }
 .input-with-prefix { position: relative; }
 .input-with-prefix span { position: absolute; left: 12px; top: 12px; color: var(--muted); font-size: 11px; }
 .input-with-prefix input { padding-left: 32px; }
-.image-preview { display: flex; align-items: center; gap: 9px; margin-top: 8px; color: var(--muted); font-size: 10px; }
-.image-preview img { width: 42px; height: 42px; border: 1px solid var(--line); border-radius: 3px; object-fit: cover; }
+.image-preview { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; color: var(--muted); font-size: 10px; }
+.image-preview-item { padding: 5px 7px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface-soft); overflow-wrap: anywhere; }
 .field-row { display: grid; grid-template-columns: 1fr 1.16fr; gap: 12px; margin-top: 20px; }
 .input-with-suffix { position: relative; }
 .input-with-suffix input { padding-right: 47px; }
@@ -86,7 +87,8 @@ form > label:not(:first-child) { margin-top: 20px; }
 .card-meta { display: flex; gap: 11px; align-items: center; color: var(--muted); font-size: 10px; flex-wrap: wrap; }
 .card-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--blue-light); }
 .record-amount { color: var(--accent); font-weight: 800; }
-.record-image { width: 54px; height: 54px; margin-top: 10px; border: 1px solid var(--line); border-radius: 4px; object-fit: cover; }
+.record-images { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.record-image { width: 54px; height: 54px; border: 1px solid var(--line); border-radius: 4px; object-fit: cover; }
 .card-action { display: flex; align-items: center; gap: 9px; }
 .status { padding: 5px 8px; border: 1px solid rgba(223,188,121,.35); border-radius: 4px; background: rgba(223,188,121,.08); color: var(--warning); font-size: 9px; font-weight: 800; text-transform: uppercase; white-space: nowrap; }
 .status.overdue { border-color: rgba(229,142,142,.35); background: rgba(229,142,142,.08); color: var(--danger); }
@@ -110,7 +112,7 @@ footer span { color: var(--ink); font-weight: 800; letter-spacing: 1.3px; }
   .nav-label { display: none; }
   .nav-item { width: auto; min-width: max-content; margin: 0; padding: 9px 10px; }
   .intro { display: block; padding: 53px 0 42px; }
-  h1 { font-size: 49px; letter-spacing: -2px; }
+  h1 { font-size: 55px; letter-spacing: -2px; }
   .intro-copy { width: auto; max-width: 370px; margin: 22px 0 0; }
   .workspace { display: block; }
   .form-panel { padding: 25px 21px; }

@@ -58,8 +58,19 @@ function fromDatabase(item) {
     updatedAt: item.updated_at,
     recordType: item.record_type || "inspections",
     amount: item.amount,
-    imageData: item.image_data
+    imageData: parseImages(item.image_data)
   };
+}
+
+function parseImages(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [value];
+  } catch {
+    return [value];
+  }
 }
 
 async function loadInspections() {
@@ -81,7 +92,7 @@ async function createInspection(item) {
     completed: false,
     record_type: item.recordType,
     amount: item.amount || null,
-    image_data: item.imageData || null
+    image_data: item.imageData.length ? JSON.stringify(item.imageData) : null
   });
   if (error) throw error;
 }
@@ -168,7 +179,9 @@ function render() {
     const amountText = activePage === "infractions" && item.amount !== null && item.amount !== undefined
       ? `<span class="record-amount">R$ ${Number(item.amount).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span><span class="dot"></span>`
       : "";
-    const imageText = item.imageData ? `<img class="record-image" src="${item.imageData}" alt="Imagem anexada ao registro">` : "";
+    const imageText = item.imageData.length
+      ? `<div class="record-images">${item.imageData.map((image, imageIndex) => `<img class="record-image" src="${image}" alt="Imagem ${imageIndex + 1} anexada ao registro">`).join("")}</div>`
+      : "";
     return `<article class="inspection-card" style="animation-delay: ${index * 45}ms">
       <div class="date-block"><strong>${formatDate(item.returnDate, { day: "2-digit" })}</strong><span>${formatDate(item.returnDate, { month: "short" }).replace(".", "")}</span></div>
       <div class="card-content"><h3>${escapeHtml(item.description)}</h3><div class="card-meta"><span>${activityText}</span><span class="dot"></span>${amountText}<span>Feita em ${performedText}</span><span class="dot"></span><span>${item.deadline} ${item.deadline == 1 ? "dia" : "dias"} de prazo</span></div>${imageText}</div>
@@ -184,35 +197,37 @@ function escapeHtml(text) {
 [performedDate, deadline].forEach(input => input.addEventListener("input", updateReturnDate));
 filter.addEventListener("change", render);
 imageInput.addEventListener("change", () => {
-  const file = imageInput.files[0];
-  if (!file) {
+  const files = Array.from(imageInput.files).slice(0, 10);
+  if (imageInput.files.length > 10) {
+    calculationHint.textContent = "Selecione no máximo 10 imagens.";
+    imageInput.value = "";
     imagePreview.hidden = true;
     imagePreview.innerHTML = "";
     return;
   }
-  const reader = new FileReader();
-  reader.onload = () => {
-    imagePreview.hidden = false;
-    imagePreview.innerHTML = `<img src="${reader.result}" alt="Prévia da imagem selecionada"><span>${escapeHtml(file.name)}</span>`;
-  };
-  reader.readAsDataURL(file);
+  if (!files.length) {
+    imagePreview.hidden = true;
+    imagePreview.innerHTML = "";
+    return;
+  }
+  imagePreview.hidden = false;
+  imagePreview.innerHTML = files.map(file => `<span class="image-preview-item">${escapeHtml(file.name)}</span>`).join("");
 });
 
-function readImage(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) return resolve(null);
+function readImages(files) {
+  return Promise.all(Array.from(files).slice(0, 10).map(file => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(file);
-  });
+  })));
 }
 
 form.addEventListener("submit", async event => {
   event.preventDefault();
   const data = new FormData(form);
   const now = new Date().toISOString();
-  const item = { id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), performedBy: data.get("performedBy"), createdAt: now, completed: false, recordType: activePage, amount: activePage === "infractions" ? Number(data.get("amount") || 0) : null, imageData: await readImage(data.get("image")) };
+  const item = { id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), performedBy: data.get("performedBy"), createdAt: now, completed: false, recordType: activePage, amount: activePage === "infractions" ? Number(data.get("amount") || 0) : null, imageData: await readImages(imageInput.files) };
   createInspection(item).then(() => {
     inspections.push(item);
     form.reset();
