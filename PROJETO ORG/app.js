@@ -1,5 +1,6 @@
 const STORAGE_KEY = "retorna-inspections";
 const form = document.querySelector("#inspection-form");
+const performedBy = document.querySelector("#performed-by");
 const performedDate = document.querySelector("#performed-date");
 const deadline = document.querySelector("#deadline");
 const returnDate = document.querySelector("#return-date");
@@ -54,6 +55,10 @@ function formatDate(value, options) {
   return parseDate(value).toLocaleDateString("pt-BR", options);
 }
 
+function formatDateTime(value) {
+  return new Date(value).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+}
+
 function updateReturnDate() {
   if (!performedDate.value || deadline.value === "") return;
   const date = parseDate(performedDate.value);
@@ -92,11 +97,13 @@ function render() {
 
   list.innerHTML = filtered.map((item, index) => {
     const status = getStatus(item);
-    const returnText = formatDate(item.returnDate, { day: "2-digit", month: "short" }).replace(" de ", "/").replace(".", "");
     const performedText = formatDate(item.performedDate, { day: "2-digit", month: "2-digit", year: "numeric" });
+    const activityText = item.updatedBy
+      ? `${escapeHtml(item.updatedBy)} ${item.completed ? "concluiu" : "reabriu"} em ${formatDateTime(item.updatedAt)}`
+      : `Registrado por ${escapeHtml(item.performedBy || "Usuário não identificado")} em ${formatDateTime(item.createdAt || `${item.performedDate}T12:00:00`)}`;
     return `<article class="inspection-card" style="animation-delay: ${index * 45}ms">
       <div class="date-block"><strong>${formatDate(item.returnDate, { day: "2-digit" })}</strong><span>${formatDate(item.returnDate, { month: "short" }).replace(".", "")}</span></div>
-      <div class="card-content"><h3>${escapeHtml(item.description)}</h3><div class="card-meta"><span>Feita em ${performedText}</span><span class="dot"></span><span>${item.deadline} ${item.deadline == 1 ? "dia" : "dias"} de prazo</span></div></div>
+      <div class="card-content"><h3>${escapeHtml(item.description)}</h3><div class="card-meta"><span>${activityText}</span><span class="dot"></span><span>Feita em ${performedText}</span><span class="dot"></span><span>${item.deadline} ${item.deadline == 1 ? "dia" : "dias"} de prazo</span></div></div>
       <div class="card-action"><span class="status ${status}">${statusLabel(status)}</span><button class="icon-button" type="button" data-id="${item.id}" aria-label="${item.completed ? "Reabrir" : "Marcar como concluído"}">${item.completed ? "↶" : "✓"}</button><button class="icon-button" type="button" data-delete="${item.id}" aria-label="Excluir registro">×</button></div>
     </article>`;
   }).join("");
@@ -111,7 +118,8 @@ filter.addEventListener("change", render);
 form.addEventListener("submit", event => {
   event.preventDefault();
   const data = new FormData(form);
-  inspections.push({ id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), completed: false });
+  const now = new Date().toISOString();
+  inspections.push({ id: crypto.randomUUID(), performedDate: data.get("performedDate"), deadline: Number(data.get("deadline")), returnDate: data.get("returnDate"), description: data.get("description").trim(), performedBy: data.get("performedBy"), createdAt: now, completed: false });
   saveInspections();
   form.reset();
   performedDate.value = toInputDate(today);
@@ -126,7 +134,11 @@ list.addEventListener("click", event => {
   const inspection = inspections.find(item => item.id === id);
   if (!inspection) return;
   if (button.dataset.delete) inspections = inspections.filter(item => item.id !== id);
-  else inspection.completed = !inspection.completed;
+  else {
+    inspection.completed = !inspection.completed;
+    inspection.updatedBy = performedBy.value;
+    inspection.updatedAt = new Date().toISOString();
+  }
   saveInspections();
   render();
 });
